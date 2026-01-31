@@ -25,6 +25,7 @@ body {
   padding: 30px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.15);
   text-align: center;
+  transition: transform 0.2s;
 }
 
 h1 { color: #e63946; }
@@ -41,12 +42,18 @@ h1 { color: #e63946; }
   border-radius: 15px;
   background: #f1f1f1;
   cursor: pointer;
-  transition: transform 0.2s, background 0.2s;
+  transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
 .level:hover { transform: scale(1.05); }
+
 .locked { background: #ddd; cursor: not-allowed; }
-.completed { background: #caffbf; }
+.completed { background: #caffbf; animation: pulse 1s infinite alternate; }
+
+@keyframes pulse {
+  from { transform: scale(1); box-shadow: 0 0 5px #caffbf; }
+  to { transform: scale(1.05); box-shadow: 0 0 20px #90ee90; }
+}
 
 .modal {
   position: fixed;
@@ -65,6 +72,13 @@ h1 { color: #e63946; }
   max-width: 400px;
   width: 90%;
   text-align: center;
+}
+
+.modal-content input, .modal-content button {
+  width: 90%;
+  padding: 10px;
+  font-size: 1rem;
+  margin-top: 10px;
 }
 
 .flash {
@@ -95,7 +109,7 @@ h1 { color: #e63946; }
   100% { transform: rotate(0deg); }
 }
 
-.confetti, .heart {
+.confetti, .heart, .sparkle {
   position: fixed;
   font-size: 2rem;
   animation: fall 2s linear forwards;
@@ -151,7 +165,7 @@ const challenges = [
 levels.forEach(level => {
   level.addEventListener('click', () => {
     const i = Number(level.dataset.level);
-    if (i !== progress || level.classList.contains('locked')) return;
+    if (i !== progress) return;
     if (i < challenges.length) openChallenge(i);
     else showFinal();
   });
@@ -186,8 +200,29 @@ function checkAnswer(i) {
   progress++;
   levels[progress]?.classList.remove('locked');
 
-  if (challenges[i].text.includes('🦖')) dinoCelebrate();
-  if (challenges[i].text.includes('⚓')) waveCelebrate();
+  // Level-specific celebration
+  switch(i) {
+    case 0: levelCelebrate(['🌿','🍃']); break;
+    case 1: levelCelebrate(['📸','✨']); break;
+    case 2: levelCelebrate(['🌞','🌊']); break;
+    case 3: levelCelebrate(['🍝','💖']); break;
+    case 4: levelCelebrate(['🐶','🥎']); break;
+    case 5: dinoCelebrate(); break;
+    case 6: waveCelebrate(); levelCelebrate(['⚓','🌊']); break;
+  }
+}
+
+function levelCelebrate(symbols = ['💖','✨'], count = 20) {
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti';
+    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.fontSize = 1.5 + Math.random() * 2 + 'rem';
+    el.style.animationDuration = 1 + Math.random() * 2 + 's';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3000);
+  }
 }
 
 function dinoCelebrate() {
@@ -221,11 +256,19 @@ function showFinal() {
 }
 
 function nope() {
+  modal.classList.remove('flash');
+  void modal.offsetWidth;
   modal.classList.add('flash');
+
   modalContent.innerHTML = `
     <div style="font-size:5rem">🃏</div>
-    <h2>Get fucked</h2>
+    <h2>Get rejected 😅</h2>
   `;
+
+  setTimeout(() => {
+    modal.classList.remove('flash');
+    showFinal();
+  }, 15000);
 }
 
 function yes() {
@@ -244,6 +287,7 @@ function spawn(symbol) {
   el.className = symbol === '🎉' ? 'confetti' : 'heart';
   el.textContent = symbol;
   el.style.left = Math.random() * 100 + 'vw';
+  el.style.fontSize = 1.5 + Math.random() * 2 + 'rem';
   el.style.animationDuration = 1 + Math.random() * 2 + 's';
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 3000);
@@ -251,3 +295,4 @@ function spawn(symbol) {
 </script>
 </body>
 </html>
+
