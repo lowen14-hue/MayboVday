@@ -12,28 +12,22 @@ html, body {
   background: #ffc0cb;
   overflow: hidden;
 }
-.game {
-  width: 100vw; height: 100vh;
-  position: relative;
-}
+.game { width: 100vw; height: 100vh; position: relative; }
+
 #progressBar { position: absolute; top:0; left:0; width:100%; height:25px; background:#ffe6f0; z-index:20; }
 #progressFill { height:100%; width:0%; background:#ff6f91; transition: width 0.5s ease; }
-#player {
-  position: absolute;
-  font-size: 3rem;
-  z-index: 10;
-  transform: translate(-50%, -50%);
-}
+
+#player { position: absolute; font-size:3rem; z-index:10; transform:translate(-50%,-50%); }
 
 /* Islands */
 .landmark {
   position: absolute;
-  font-size: 3rem;
+  font-size:3rem;
   cursor: pointer;
-  z-index: 11;
-  transform: translate(-50%, -50%);
+  z-index:11;
+  transform: translate(-50%,-50%);
 }
-.landmark.locked { opacity: 0.5; pointer-events: none; }
+.landmark.locked { opacity:0.5; pointer-events:none; }
 .landmark:hover:not(.locked) { transform: translate(-50%,-50%) scale(1.5); }
 
 /* SVG Paths */
@@ -61,15 +55,15 @@ html, body {
   <svg id="pathSVG"></svg>
   <div id="player">👧🏽</div>
 
-  <!-- Emoji islands -->
-  <div class="landmark" data-level="0" data-x="100" data-y="100">🌲</div>
-  <div class="landmark locked" data-level="1" data-x="400" data-y="200">📸</div>
-  <div class="landmark locked" data-level="2" data-x="700" data-y="350">🏝️</div>
-  <div class="landmark locked" data-level="3" data-x="1000" data-y="500">🍝</div>
-  <div class="landmark locked" data-level="4" data-x="750" data-y="600">🐶</div>
-  <div class="landmark locked" data-level="5" data-x="1200" data-y="450">🦖</div>
-  <div class="landmark locked" data-level="6" data-x="1350" data-y="300">⚓</div>
-  <div class="landmark locked" data-level="7" data-x="1500" data-y="150">🏰</div>
+  <!-- Emoji islands using percentages -->
+  <div class="landmark" data-level="0" data-x="5%" data-y="10%">🌲</div>
+  <div class="landmark locked" data-level="1" data-x="25%" data-y="20%">📸</div>
+  <div class="landmark locked" data-level="2" data-x="45%" data-y="35%">🏝️</div>
+  <div class="landmark locked" data-level="3" data-x="65%" data-y="50%">🍝</div>
+  <div class="landmark locked" data-level="4" data-x="50%" data-y="70%">🐶</div>
+  <div class="landmark locked" data-level="5" data-x="75%" data-y="55%">🦖</div>
+  <div class="landmark locked" data-level="6" data-x="85%" data-y="35%">⚓</div>
+  <div class="landmark locked" data-level="7" data-x="95%" data-y="15%">🏰</div>
 </div>
 
 <div class="modal" id="modal">
@@ -95,26 +89,27 @@ const challenges = [
   { text: "⚓🌊 Ahoy! Best place I’ve ever taken you to eat?", answer: "cliff house" }
 ];
 
-// Draw curved paths
-for(let i=0;i<levels.length-1;i++){
-  const x1 = parseInt(levels[i].dataset.x);
-  const y1 = parseInt(levels[i].dataset.y);
-  const x2 = parseInt(levels[i+1].dataset.x);
-  const y2 = parseInt(levels[i+1].dataset.y);
-  const cx = (x1 + x2)/2;
-  const cy = (y1 + y2)/2 - 50; // curve above the midpoint
-  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-  path.setAttribute("d",`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
-  path.setAttribute("class","curve");
-  pathSVG.appendChild(path);
+// Draw curved paths using percentages and SVG
+function drawPaths(){
+  for(let i=0;i<levels.length-1;i++){
+    const x1 = levels[i].dataset.x;
+    const y1 = levels[i].dataset.y;
+    const x2 = levels[i+1].dataset.x;
+    const y2 = levels[i+1].dataset.y;
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+    path.setAttribute("d",`M ${x1} ${y1} Q ${(parseFloat(x1)+parseFloat(x2))/2}% ${(parseFloat(y1)+parseFloat(y2))/2-5}%, ${x2} ${y2}`);
+    path.setAttribute("class","curve");
+    pathSVG.appendChild(path);
+  }
 }
+drawPaths();
 
-// Move player along current level
+// Move avatar
 function movePlayerToLevel(i){
-  const x = parseInt(levels[i].dataset.x);
-  const y = parseInt(levels[i].dataset.y);
-  player.style.left = x+'px';
-  player.style.top = y+'px';
+  const x = levels[i].dataset.x;
+  const y = levels[i].dataset.y;
+  player.style.left = x;
+  player.style.top = y;
   progressFill.style.width = ((i/(levels.length-1))*100)+'%';
 }
 movePlayerToLevel(0);
@@ -123,8 +118,8 @@ movePlayerToLevel(0);
 levels.forEach(level=>{
   level.addEventListener('click',()=>{
     const i = Number(level.dataset.level);
-    if(i !== progress || level.classList.contains('locked')) return;
-    if(i < challenges.length) openChallenge(i);
+    if(i!==progress || level.classList.contains('locked')) return;
+    if(i<challenges.length) openChallenge(i);
     else showFinal();
   });
 });
