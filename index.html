@@ -10,20 +10,16 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(180deg,#87CEFA,#fff4e6);
   overflow: hidden;
+  background: linear-gradient(180deg, #87CEFA, #E0F7FA);
 }
 
-/* GAME BOARD */
+/* FULLSCREEN MAP */
 .game {
   position: relative;
-  width: 95%;
-  max-width: 1000px;
-  height: 90vh;
-  margin: auto;
-  background: linear-gradient(to bottom, #c1f0c1 0%, #f0e0d0 100%);
-  border-radius: 20px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(to bottom, #B2EBF2 0%, #FFECB3 100%);
   overflow: hidden;
 }
 
@@ -35,12 +31,12 @@ svg {
   pointer-events: none;
 }
 path {
-  stroke: #ff69b4;
-  stroke-width: 6;
+  stroke: #FF4081;
+  stroke-width: 8;
   fill: none;
   stroke-linecap: round;
-  stroke-dasharray: 500;
-  stroke-dashoffset: 500;
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
   animation: drawPath 2s forwards;
 }
 @keyframes drawPath {
@@ -50,31 +46,36 @@ path {
 /* LANDMARK ICONS */
 .landmark {
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   cursor: pointer;
   transition: transform 0.3s, filter 0.3s;
-  z-index: 5;
 }
 .landmark img {
   width: 100%;
   height: 100%;
 }
-.landmark.locked img { filter: grayscale(100%) brightness(1.2); }
-.landmark.completed img { animation: glow 1s infinite alternate; }
-.landmark:hover:not(.locked) { transform: scale(1.25); }
+.landmark.locked img {
+  filter: grayscale(100%) brightness(1.5);
+}
+.landmark.completed img {
+  animation: glow 1s infinite alternate;
+}
+.landmark:hover:not(.locked) {
+  transform: scale(1.3);
+}
 @keyframes glow {
-  from { filter: drop-shadow(0 0 6px #ff69b4); }
-  to { filter: drop-shadow(0 0 16px #ff69b4); }
+  from { filter: drop-shadow(0 0 10px #ff80ab); }
+  to { filter: drop-shadow(0 0 25px #f50057); }
 }
 
 /* PLAYER AVATAR */
 #player {
   position: absolute;
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   z-index: 10;
-  transition: top 1s ease, left 1s ease;
+  transition: top 0.8s ease, left 0.8s ease;
 }
 
 /* MODAL */
@@ -89,36 +90,37 @@ path {
 }
 .modal-content {
   background: white;
-  padding: 30px;
   border-radius: 15px;
-  max-width: 400px;
+  padding: 30px;
+  max-width: 450px;
   width: 90%;
   text-align: center;
 }
-.modal-content input, .modal-content button {
+.modal-content input,
+.modal-content button {
   width: 90%;
   padding: 10px;
   font-size: 1rem;
   margin-top: 10px;
 }
 
-/* EFFECTS */
+/* FLOATING EFFECTS */
 .effect {
   position: fixed;
-  font-size: 2rem;
+  font-size: 2.2rem;
   animation: floatUp 3s linear forwards;
   pointer-events: none;
   z-index: 15;
 }
 @keyframes floatUp {
-  from { transform: translateY(0) rotate(0deg); opacity:1; }
-  to { transform: translateY(-100vh) rotate(360deg); opacity:0; }
+  from { transform: translateY(0) rotate(0deg); opacity: 1; }
+  to { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
 }
 
-/* FLASH RED FOR NO */
+/* FLASH RED “NO” SCREEN */
 .flashRed {
   animation: flashRed 0.15s infinite alternate;
-  text-align:center;
+  text-align: center;
 }
 @keyframes flashRed {
   from { background: red; }
@@ -130,40 +132,40 @@ path {
 <body>
 <div class="game" id="game">
 
-  <!-- SVG paths -->
+  <!-- SVG paths connecting each location -->
   <svg id="paths">
-    <path id="p0" d="M120,90 C200,120 300,60 380,100"></path>
-    <path id="p1" d="M380,100 C460,140 380,200 300,230"></path>
-    <path id="p2" d="M300,230 C380,260 500,200 580,240"></path>
-    <path id="p3" d="M580,240 C620,280 550,350 500,390"></path>
-    <path id="p4" d="M500,390 C580,420 650,360 720,390"></path>
-    <path id="p5" d="M720,390 C780,420 820,300 860,240"></path>
-    <path id="p6" d="M860,240 C940,200 920,100 900,40"></path>
+    <path d="M140,130 C240,180 340,100 460,140"></path>
+    <path d="M460,140 C540,180 470,260 380,300"></path>
+    <path d="M380,300 C460,340 600,260 700,300"></path>
+    <path d="M700,300 C740,350 660,450 600,500"></path>
+    <path d="M600,500 C680,540 760,460 820,500"></path>
+    <path d="M820,500 C860,540 900,380 920,300"></path>
+    <path d="M920,300 C960,260 940,160 900,100"></path>
   </svg>
 
-  <!-- LANDMARKS -->
-  <div class="landmark" data-level="0" style="top:60px; left:100px;">
+  <!-- Level landmarks with working PNG icons -->
+  <div class="landmark" data-level="0" style="top:100px; left:120px;">
     <img src="https://i.imgur.com/8Z5b9mD.png" alt="Forest">
   </div>
-  <div class="landmark locked" data-level="1" style="top:80px; left:360px;">
-    <img src="https://i.imgur.com/q8yVRJk.png" alt="Camera">
+  <div class="landmark locked" data-level="1" style="top:120px; left:380px;">
+    <img src="https://i.imgur.com/q8yVRJk.png" alt="Memory">
   </div>
-  <div class="landmark locked" data-level="2" style="top:220px; left:300px;">
-    <img src="https://i.imgur.com/IxFJ0Ih.png" alt="Beach">
+  <div class="landmark locked" data-level="2" style="top:300px; left:340px;">
+    <img src="https://i.imgur.com/IxFJ0Ih.png" alt="Florida">
   </div>
-  <div class="landmark locked" data-level="3" style="top:260px; left:500px;">
-    <img src="https://i.imgur.com/m7hVKsm.png" alt="Pasta">
+  <div class="landmark locked" data-level="3" style="top:340px; left:540px;">
+    <img src="https://i.imgur.com/m7hVKsm.png" alt="Kitchen">
   </div>
-  <div class="landmark locked" data-level="4" style="top:380px; left:460px;">
+  <div class="landmark locked" data-level="4" style="top:500px; left:500px;">
     <img src="https://i.imgur.com/NxLg44X.png" alt="Dog Park">
   </div>
-  <div class="landmark locked" data-level="5" style="top:380px; left:640px;">
+  <div class="landmark locked" data-level="5" style="top:500px; left:680px;">
     <img src="https://i.imgur.com/l3E4Sft.png" alt="Dino">
   </div>
-  <div class="landmark locked" data-level="6" style="top:240px; left:780px;">
-    <img src="https://i.imgur.com/MRmkzkl.png" alt="Anchor">
+  <div class="landmark locked" data-level="6" style="top:350px; left:820px;">
+    <img src="https://i.imgur.com/MRmkzkl.png" alt="Nautical">
   </div>
-  <div class="landmark locked" data-level="7" style="top:20px; left:900px;">
+  <div class="landmark locked" data-level="7" style="top:100px; left:920px;">
     <img src="https://i.imgur.com/UkVm2Z9.png" alt="Castle">
   </div>
 
@@ -178,12 +180,14 @@ path {
 </div>
 
 <script>
+// LANDMARKS & PLAYER
 const landmarks = document.querySelectorAll('.landmark');
 const player = document.getElementById('player');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
 let progress = 0;
 
+// CHALLENGES
 const challenges = [
   { text: "Where did we go the first time I knew I loved you?", answer: "sargent peps" },
   { text: "Where was our first photo taken?", answer: "towers girls bathroom" },
@@ -194,80 +198,92 @@ const challenges = [
   { text: "⚓🌊 Ahoy! Best place I’ve ever taken you to eat?", answer: "cliff house" }
 ];
 
-function normalize(s){ return s.toLowerCase().replace(/[^a-z0-9\s]/g,''); }
+function normalize(s) { return s.toLowerCase().replace(/[^a-z0-9\s]/g,''); }
 
+// CLICK HANDLER
 landmarks.forEach(l => {
   l.addEventListener('click', () => {
     const i = Number(l.dataset.level);
-    if(i!==progress) return;
-    if(i<challenges.length) openChallenge(i);
+    if (i !== progress) return;
+    if (i < challenges.length) openChallenge(i);
     else showFinal();
   });
 });
 
-function openChallenge(i){
+// OPEN CHALLENGE
+function openChallenge(i) {
   modal.style.display = 'flex';
-  modalContent.innerHTML = `<h2>${challenges[i].text}</h2>
-    <input id="answer" placeholder="Your answer..."/>
+  modalContent.innerHTML = `
+    <h2>${challenges[i].text}</h2>
+    <input id="answer" placeholder="Your answer..." />
     <br><br>
-    <button onclick="checkAnswer(${i})">Submit</button>`;
+    <button onclick="checkAnswer(${i})">Submit</button>
+  `;
 }
 
-function checkAnswer(i){
+// CHECK ANSWER
+function checkAnswer(i) {
   const user = normalize(document.getElementById('answer').value);
-  const target = normalize(challenges[i].answer).split(' ');
-  const correct = target.every(word=>user.includes(word));
-  if(!correct){ alert("Not quite 😏 try again"); return; }
+  const targetWords = normalize(challenges[i].answer).split(' ');
+  const correct = targetWords.every(word => user.includes(word));
+  if (!correct) { alert("Not quite 😏 try again"); return; }
 
-  modal.style.display='none';
+  modal.style.display = 'none';
   landmarks[i].classList.add('completed');
   progress++;
   landmarks[progress]?.classList.remove('locked');
 
-  // Move player avatar to new landmark
-  const rect = landmarks[i].getBoundingClientRect();
+  // Move player avatar
+  const pos = landmarks[i].getBoundingClientRect();
   const gameRect = document.getElementById('game').getBoundingClientRect();
-  player.style.top = rect.top - gameRect.top + 10 + 'px';
-  player.style.left = rect.left - gameRect.left + 10 + 'px';
+  player.style.top = `${pos.top - gameRect.top}px`;
+  player.style.left = `${pos.left - gameRect.left}px`;
 
-  spawnEffects(['💖','✨'],25);
+  spawnEffects(['💖','✨'], 30);
 }
 
-function showFinal(){
-  modal.style.display='flex';
-  modalContent.innerHTML = `<h2>💘 You made it!</h2>
+// FINAL QUESTION
+function showFinal() {
+  modal.style.display = 'flex';
+  modalContent.innerHTML = `
+    <h2>💘 You made it!</h2>
     <p>Will you be my Valentine?</p>
     <button onclick="yes()">Yes 💕</button>
-    <button onclick="nope()" style="background:#555;color:white;">No</button>`;
+    <button onclick="nope()" style="background:#555;color:white;">No</button>
+  `;
 }
 
-function nope(){
-  modalContent.innerHTML = `<div class="flashRed"><div style="font-size:5rem">🃏</div><h2>Get Fucked</h2></div>`;
-  setTimeout(()=>{ showFinal(); },10000);
+function nope() {
+  modalContent.innerHTML = `
+    <div class="flashRed">
+      <div style="font-size:5rem">🃏</div><h2>Get Fucked</h2>
+    </div>
+  `;
+  setTimeout(showFinal, 10000);
 }
 
-function yes(){
+function yes() {
   modalContent.innerHTML = `<h2>🥰 Yes! 🥰</h2><p>I knew it!</p>`;
-  spawnEffects(['🎉','💗'],50);
+  spawnEffects(['🎉','💗'], 60);
 }
 
-function spawnEffects(symbols,count=10){
-  for(let i=0;i<count;i++){
-    const e=document.createElement('div');
-    e.className='effect';
-    e.textContent=symbols[Math.floor(Math.random()*symbols.length)];
-    e.style.left=Math.random()*100+'vw';
-    e.style.animationDuration=2+Math.random()*2+'s';
+// SPAWN PARTICLE EFFECTS
+function spawnEffects(symbols, count=10) {
+  for (let i=0; i<count; i++) {
+    const e = document.createElement('div');
+    e.className = 'effect';
+    e.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+    e.style.left = `${Math.random()*100}vw`;
     document.body.appendChild(e);
-    setTimeout(()=>e.remove(),3000);
+    setTimeout(()=>e.remove(), 3000);
   }
 }
 
-// Initialize player on first landmark
-const rect = landmarks[0].getBoundingClientRect();
-const gameRect = document.getElementById('game').getBoundingClientRect();
-player.style.top = rect.top - gameRect.top + 10 + 'px';
-player.style.left = rect.left - gameRect.left + 10 + 'px';
+// INITIALIZE PLAYER
+const initPos = landmarks[0].getBoundingClientRect();
+const board = document.getElementById('game').getBoundingClientRect();
+player.style.top = `${initPos.top - board.top}px`;
+player.style.left = `${initPos.left - board.left}px`;
 </script>
 
 </body>
