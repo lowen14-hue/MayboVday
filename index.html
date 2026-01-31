@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Valentine Quest RPG 💖</title>
+<title>Valentine Quest 💖</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 html, body {
@@ -10,19 +10,24 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
   font-family: 'Segoe UI', sans-serif;
   background: #ffc0cb; /* light pink background */
+  overflow: hidden;
 }
 
-/* Game container */
+/* Game container full screen */
 .game {
-  position: relative;
   width: 100vw;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  text-align: center;
+  position: relative;
 }
 
-/* Player */
+/* Player avatar */
 #player {
   position: absolute;
   font-size: 3rem;
@@ -30,24 +35,61 @@ html, body {
   transition: top 0.8s ease, left 0.8s ease;
 }
 
-/* Landmarks */
-.landmark {
-  position: absolute;
-  font-size: 3rem;
-  cursor: pointer;
-  transition: transform 0.3s;
-  z-index: 11;
+/* Map levels */
+.map {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 100px;
+  width: 90%;
+  max-width: 1000px;
 }
-.landmark.locked { opacity: 0.4; pointer-events: none; }
-.landmark:hover:not(.locked) { transform: scale(1.4) rotate(-5deg); }
+
+.level {
+  padding: 20px;
+  border-radius: 15px;
+  background: #f1f1f1;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s;
+  font-size: 1.2rem;
+}
+
+.level:hover { transform: scale(1.1); }
+.locked { background: #ddd; cursor: not-allowed; }
+.completed { background: #caffbf; }
+
+/* Modal */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 30;
+}
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+.modal-content input, .modal-content button {
+  width: 90%;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 1rem;
+}
 
 /* Progress bar */
 #progressBar {
   position: absolute;
   top: 0;
   left: 0;
-  height: 24px;
   width: 100%;
+  height: 25px;
   background: #ffe6f0;
   z-index: 20;
 }
@@ -58,230 +100,154 @@ html, body {
   transition: width 0.5s ease;
 }
 
-/* Modal */
-.modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.7);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 30;
-}
-.modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 15px;
-  text-align: center;
-  width: 90%;
-  max-width: 450px;
-}
-.modal-content input, .modal-content button {
-  width: 90%;
-  padding: 10px;
-  font-size: 1rem;
-  margin-top: 10px;
+/* Flashing red for No screen */
+.flashRed { animation: flashRedAnim 0.15s infinite alternate; }
+@keyframes flashRedAnim {
+  from { background: white; }
+  to { background: red; }
 }
 
-/* Floating effects */
-.effect {
+/* Confetti and hearts */
+.confetti, .heart {
   position: fixed;
   font-size: 2rem;
-  animation: float 3s linear forwards;
+  animation: fall 2s linear forwards;
   pointer-events: none;
-  z-index: 25;
+  z-index: 20;
 }
-@keyframes float {
-  to { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
-}
-
-/* Clouds and birds */
-.cloud, .bird {
-  position: absolute;
-  z-index: 5;
-}
-.cloud { font-size: 3rem; opacity: 0.8; animation: cloudMove linear infinite; }
-.bird { font-size: 2rem; animation: birdMove linear infinite; }
-@keyframes cloudMove { from { left:-10%; } to { left:110%; } }
-@keyframes birdMove { from { left:-10%; } to { left:110%; } }
-
-/* Flashing red for No screen */
-.flashRed { animation: flashred 0.2s infinite alternate; z-index:50; }
-@keyframes flashred { from {background:red;} to {background:white;} }
-
-/* Glowing path */
-.path-line {
-  position: absolute;
-  background: linear-gradient(90deg, #ff6f91, #ffd1dc);
-  box-shadow: 0 0 10px #ff6f91, 0 0 20px #ffd1dc;
-  border-radius: 10px;
-  z-index: 1;
-  transform-origin: left center;
-  animation: glow 1.5s infinite alternate;
-}
-@keyframes glow {
-  0% { box-shadow: 0 0 10px #ff6f91, 0 0 20px #ffd1dc; }
-  100% { box-shadow: 0 0 20px #ff6f91, 0 0 30px #ffd1dc; }
+@keyframes fall {
+  from { transform: translateY(-20px); opacity: 1; }
+  to { transform: translateY(100vh); opacity: 0; }
 }
 </style>
 </head>
 <body>
 
-<div class="game" id="game"></div>
+<div class="game">
+  <div id="progressBar"><div id="progressFill"></div></div>
 
-<!-- Player -->
-<div id="player">👧🏽</div> <!-- cartoon girl with black hair -->
+  <!-- Player avatar -->
+  <div id="player">👧🏽</div>
 
-<!-- Landmarks -->
-<div class="landmark" data-level="0" style="top:100px; left:100px;">🌲</div>
-<div class="landmark locked" data-level="1" style="top:200px; left:300px;">📸</div>
-<div class="landmark locked" data-level="2" style="top:350px; left:500px;">🏝️</div>
-<div class="landmark locked" data-level="3" style="top:450px; left:650px;">🍝</div>
-<div class="landmark locked" data-level="4" style="top:550px; left:550px;">🐶</div>
-<div class="landmark locked" data-level="5" style="top:450px; left:750px;">🦖</div>
-<div class="landmark locked" data-level="6" style="top:350px; left:850px;">⚓</div>
-<div class="landmark locked" data-level="7" style="top:150px; left:950px;">🏰</div>
+  <h1>💘 Valentine Quest 💘</h1>
+  <p>Complete every stop on the map to reach the castle.</p>
 
-<!-- Glowing path -->
-<div id="pathContainer"></div>
+  <div class="map">
+    <div class="level" data-level="0">🌲 First Date Forest</div>
+    <div class="level locked" data-level="1">📸 Memory Meadow</div>
+    <div class="level locked" data-level="2">🏝️ Florida Surprise</div>
+    <div class="level locked" data-level="3">🍝 Kitchen Kingdom</div>
+    <div class="level locked" data-level="4">🐶 Digital Dog Park</div>
+    <div class="level locked" data-level="5">🦖 Dino Dance Floor</div>
+    <div class="level locked" data-level="6">⚓ Nautical Nook</div>
+    <div class="level locked" data-level="7">🏰 Valentine Castle</div>
+  </div>
+</div>
 
-<!-- Progress bar -->
-<div id="progressBar"><div id="progressFill"></div></div>
-
-<!-- Modal -->
 <div class="modal" id="modal">
   <div class="modal-content" id="modalContent"></div>
 </div>
 
 <script>
-// Player and landmarks
-const landmarks = document.querySelectorAll('.landmark');
-const player = document.getElementById('player');
+const levels = document.querySelectorAll('.level');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
+const player = document.getElementById('player');
 const progressFill = document.getElementById('progressFill');
-const pathContainer = document.getElementById('pathContainer');
 let progress = 0;
 
 const challenges = [
   { text: "Where did we go the first time I knew I loved you?", answer: "sargent peps" },
   { text: "Where was our first photo taken?", answer: "towers girls bathroom" },
-  { text: "Where were we when I surprised you in Florida?", answer: "st armands circle" },
+  { text: "Where were we when I surprised you in Florida?", answer: "st armand's circle" },
   { text: "🍝 What is our favorite meal that I make soooo good?", answer: "shrimp scampi" },
   { text: "🐶 What was the name of our AI dog?", answer: "chase" },
   { text: "🦖 RAWR! Danny the dinosaur is jamming — what is his favorite song?", answer: "dancing in the moonlight" },
   { text: "⚓🌊 Ahoy! Best place I’ve ever taken you to eat?", answer: "cliff house" }
 ];
 
-function normalize(str){ return str.toLowerCase().replace(/[^a-z0-9\s]/g,''); }
-
-function updatePlayerPosition(i){
-  const rect=landmarks[i].getBoundingClientRect();
-  const board=document.body.getBoundingClientRect();
-  player.style.top=(rect.top-board.top)+'px';
-  player.style.left=(rect.left-board.left)+'px';
-  progressFill.style.width=((i/(landmarks.length-1))*100)+'%';
-}
-updatePlayerPosition(0);
-
-// Draw glowing path between landmarks
-for(let i=0;i<landmarks.length-1;i++){
-  const start=landmarks[i].getBoundingClientRect();
-  const end=landmarks[i+1].getBoundingClientRect();
-  const line = document.createElement('div');
-  line.className='path-line';
-  const dx=end.left-start.left;
-  const dy=end.top-start.top;
-  const length=Math.sqrt(dx*dx+dy*dy);
-  const angle=Math.atan2(dy,dx)*180/Math.PI;
-  line.style.width=length+'px';
-  line.style.height='6px';
-  line.style.top=(start.top+start.height/2)+'px';
-  line.style.left=(start.left+start.width/2)+'px';
-  line.style.transform=`rotate(${angle}deg)`;
-  pathContainer.appendChild(line);
+// Move player avatar to clicked level
+function movePlayerToLevel(i){
+  const rect = levels[i].getBoundingClientRect();
+  player.style.top = (rect.top + window.scrollY - 50) + 'px';
+  player.style.left = (rect.left + window.scrollX) + 'px';
+  progressFill.style.width = ((i/(levels.length-1))*100)+'%';
 }
 
-// Landmark click
-landmarks.forEach(l=>{
-  l.addEventListener('click', ()=>{
-    const i=parseInt(l.dataset.level);
-    if(i!==progress) return;
-    if(i<challenges.length) openChallenge(i);
+// Initial position
+movePlayerToLevel(0);
+
+// Level clicks
+levels.forEach(level => {
+  level.addEventListener('click', () => {
+    const i = Number(level.dataset.level);
+    if(i !== progress || level.classList.contains('locked')) return;
+    if(i < challenges.length) openChallenge(i);
     else showFinal();
   });
 });
 
-// Challenge modal
-function openChallenge(i){
-  modal.style.display='flex';
-  modalContent.innerHTML=`<h2>${challenges[i].text}</h2>
-    <input id="answer" placeholder="Your answer..."/>
+function normalize(str) { return str.toLowerCase().replace(/[^a-z0-9\s]/g, ''); }
+
+function openChallenge(i) {
+  modal.style.display = 'flex';
+  modalContent.innerHTML = `
+    <h2>${challenges[i].text}</h2>
+    <input id="answer" placeholder="Your answer..." />
     <br><br>
-    <button onclick="checkAnswer(${i})">Submit</button>`;
+    <button onclick="checkAnswer(${i})">Submit</button>
+  `;
 }
 
-function checkAnswer(i){
-  const user=normalize(document.getElementById('answer').value);
-  const target=normalize(challenges[i].answer).split(' ');
-  const correct=target.every(word=>user.includes(word));
-  if(!correct){ alert("Not quite 😏 try again"); return; }
+function checkAnswer(i) {
+  const user = normalize(document.getElementById('answer').value);
+  const target = normalize(challenges[i].answer).split(' ');
+  const correct = target.every(word => user.includes(word));
+  if(!correct) { alert("Not quite 😏 try again"); return; }
 
-  modal.style.display='none';
-  landmarks[i].classList.remove('locked');
-  landmarks[i].style.transform='scale(1.5)';
-  setTimeout(()=> landmarks[i].style.transform='',400);
+  modal.style.display = 'none';
+  levels[i].classList.add('completed');
   progress++;
-  updatePlayerPosition(i);
-  spawnEffects(['💖','✨','🎉'],30);
+  levels[progress]?.classList.remove('locked');
+  movePlayerToLevel(i);
 }
 
-// Final screen
-function showFinal(){
-  modal.style.display='flex';
-  modalContent.innerHTML=`<h2>💘 You made it!</h2>
+function showFinal() {
+  modal.style.display = 'flex';
+  modalContent.innerHTML = `
+    <h2>💖 You made it 💖</h2>
     <p>Will you be my Valentine?</p>
     <button onclick="yes()">Yes 💕</button>
-    <button onclick="nope()" style="background:#555;color:white;">No</button>`;
+    <button onclick="nope()" style="margin-left:10px;background:#555;color:white;">No</button>
+  `;
 }
 
-function nope(){
-  modalContent.innerHTML=`<div class="flashRed"><div style="font-size:5rem">🃏</div><h2>Get Fucked</h2></div>`;
-  setTimeout(showFinal,10000);
+function nope() {
+  modalContent.innerHTML = `
+    <div class="flashRed" style="height:200px;">
+      <div style="font-size:5rem">🃏</div>
+      <h2>Get Fucked</h2>
+    </div>
+  `;
+  setTimeout(showFinal, 10000);
 }
 
-function yes(){
-  modalContent.innerHTML=`<h2>🥰 Yes! 🥰</h2><p>I knew it!</p>`;
-  spawnEffects(['💖','✨','🎉'],60);
+function yes() {
+  modalContent.innerHTML = `
+    <h2>🥰 YAY 🥰</h2>
+    <p>I was hoping you'd say yes.</p>
+  `;
+  for(let i=0;i<50;i++){ spawn('🎉'); spawn('💖'); }
 }
 
-function spawnEffects(symbols,count){
-  for(let i=0;i<count;i++){
-    const e=document.createElement('div');
-    e.className='effect';
-    e.textContent=symbols[Math.floor(Math.random()*symbols.length)];
-    e.style.left=Math.random()*100+'vw';
-    document.body.appendChild(e);
-    setTimeout(()=>e.remove(),3000);
-  }
-}
-
-// Clouds and birds
-for(let i=0;i<5;i++){
-  const cloud=document.createElement('div');
-  cloud.className='cloud';
-  cloud.style.top=Math.random()*50+'%';
-  cloud.style.animationDuration=(20+Math.random()*20)+'s';
-  cloud.textContent='☁️';
-  document.body.appendChild(cloud);
-}
-for(let i=0;i<3;i++){
-  const bird=document.createElement('div');
-  bird.className='bird';
-  bird.style.top=Math.random()*60+20+'%';
-  bird.style.animationDuration=(15+Math.random()*10)+'s';
-  bird.textContent='🐦';
-  document.body.appendChild(bird);
+function spawn(symbol) {
+  const el = document.createElement('div');
+  el.className = symbol === '🎉' ? 'confetti' : 'heart';
+  el.textContent = symbol;
+  el.style.left = Math.random()*100 + 'vw';
+  el.style.animationDuration = 1 + Math.random()*2 + 's';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
 }
 </script>
 </body>
