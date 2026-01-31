@@ -16,44 +16,44 @@ body, html {
   background: #87CEFA;
 }
 
+/* Game container */
 .game {
   position: relative;
   width: 100vw;
   height: 100vh;
   overflow: hidden;
+  background: linear-gradient(to bottom, #a0e7ff, #6ccff6);
 }
 
-/* Terrain tiles */
+/* Terrain tiles using emoji/color squares */
 .tile {
   position: absolute;
-  width: 64px;
-  height: 32px;
-  transform: skewY(26.565deg) scaleY(0.5);
-  z-index: 0;
-  border: 1px solid #0002; /* optional grid lines */
+  font-size: 3rem;
+  line-height: 1;
+  width: 48px;
+  height: 48px;
+  text-align: center;
+  pointer-events: none;
 }
-.grass { background-color: #6cbd45; }
-.forest { background-color: #2f7c3e; }
-.water { background-color: #4ea1f2; }
 
 /* Player */
 #player {
   position: absolute;
-  font-size: 3rem;
-  z-index: 5;
+  font-size: 4rem;
+  z-index: 10;
   transition: top 0.8s ease, left 0.8s ease;
 }
 
 /* Landmarks */
 .landmark {
   position: absolute;
-  font-size: 2.5rem;
+  font-size: 3rem;
   cursor: pointer;
   transition: transform 0.3s;
-  z-index: 4;
+  z-index: 11;
 }
 .landmark.locked { opacity: 0.4; pointer-events: none; }
-.landmark:hover:not(.locked) { transform: scale(1.3) rotate(-5deg); }
+.landmark:hover:not(.locked) { transform: scale(1.4) rotate(-5deg); }
 
 /* Progress bar */
 #progressBar {
@@ -63,7 +63,7 @@ body, html {
   height: 24px;
   width: 100%;
   background: #eee;
-  z-index: 10;
+  z-index: 20;
 }
 #progressFill {
   height: 100%;
@@ -80,7 +80,7 @@ body, html {
   display: none;
   justify-content: center;
   align-items: center;
-  z-index: 20;
+  z-index: 30;
 }
 .modal-content {
   background: white;
@@ -103,7 +103,7 @@ body, html {
   font-size: 2rem;
   animation: float 3s linear forwards;
   pointer-events: none;
-  z-index: 15;
+  z-index: 25;
 }
 @keyframes float {
   to { transform: translateY(-120vh) rotate(360deg); opacity: 0; }
@@ -112,7 +112,7 @@ body, html {
 /* Clouds and birds */
 .cloud, .bird {
   position: absolute;
-  z-index: 2;
+  z-index: 5;
 }
 .cloud { font-size: 3rem; opacity: 0.8; animation: cloudMove linear infinite; }
 .bird { font-size: 2rem; animation: birdMove linear infinite; }
@@ -122,10 +122,10 @@ body, html {
 /* Flashing red for No screen */
 .flashRed { animation: flashred 0.2s infinite alternate; z-index:50; }
 @keyframes flashred { from {background:red;} to {background:white;} }
-
 </style>
 </head>
 <body>
+
 <div class="game" id="game"></div>
 
 <!-- Player -->
@@ -133,13 +133,13 @@ body, html {
 
 <!-- Landmarks -->
 <div class="landmark" data-level="0" style="top:100px; left:100px;">🌲</div>
-<div class="landmark locked" data-level="1" style="top:150px; left:300px;">📸</div>
-<div class="landmark locked" data-level="2" style="top:250px; left:500px;">🏝️</div>
-<div class="landmark locked" data-level="3" style="top:300px; left:650px;">🍝</div>
-<div class="landmark locked" data-level="4" style="top:400px; left:550px;">🐶</div>
-<div class="landmark locked" data-level="5" style="top:450px; left:700px;">🦖</div>
-<div class="landmark locked" data-level="6" style="top:300px; left:800px;">⚓</div>
-<div class="landmark locked" data-level="7" style="top:100px; left:900px;">🏰</div>
+<div class="landmark locked" data-level="1" style="top:200px; left:300px;">📸</div>
+<div class="landmark locked" data-level="2" style="top:350px; left:500px;">🏝️</div>
+<div class="landmark locked" data-level="3" style="top:450px; left:650px;">🍝</div>
+<div class="landmark locked" data-level="4" style="top:550px; left:550px;">🐶</div>
+<div class="landmark locked" data-level="5" style="top:450px; left:750px;">🦖</div>
+<div class="landmark locked" data-level="6" style="top:350px; left:850px;">⚓</div>
+<div class="landmark locked" data-level="7" style="top:150px; left:950px;">🏰</div>
 
 <!-- Progress bar -->
 <div id="progressBar"><div id="progressFill"></div></div>
@@ -149,23 +149,25 @@ body, html {
   <div class="modal-content" id="modalContent"></div>
 </div>
 
-<!-- Background music -->
+<!-- Background music and sound -->
 <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-love-ballad-romantic-1277.mp3" loop autoplay></audio>
 <audio id="ding" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.wav"></audio>
 
 <script>
-// Generate terrain tiles
+// Terrain emojis
+const terrainTypes = ['🌿','🌲','🌊']; // Grass, forest, water
 const game = document.getElementById('game');
-const cols = Math.ceil(window.innerWidth / 64) + 1;
-const rows = Math.ceil(window.innerHeight / 32) + 1;
+const cols = Math.ceil(window.innerWidth / 48);
+const rows = Math.ceil(window.innerHeight / 48);
+
+// Generate terrain
 for(let y=0; y<rows; y++){
   for(let x=0; x<cols; x++){
     const tile = document.createElement('div');
     tile.classList.add('tile');
-    const type = Math.random()<0.1?'water': Math.random()<0.3?'forest':'grass';
-    tile.classList.add(type);
-    tile.style.top = `${y*16}px`;
-    tile.style.left = `${x*32}px`;
+    tile.textContent = Math.random()<0.1?'🌊': Math.random()<0.3?'🌲':'🌿';
+    tile.style.top = `${y*48}px`;
+    tile.style.left = `${x*48}px`;
     game.appendChild(tile);
   }
 }
@@ -188,14 +190,14 @@ for(let i=0;i<3;i++){
   game.appendChild(bird);
 }
 
-// Player & landmarks logic
+// Player and landmarks logic
 const landmarks = document.querySelectorAll('.landmark');
 const player = document.getElementById('player');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
 const progressFill = document.getElementById('progressFill');
 const ding = document.getElementById('ding');
-let progress=0;
+let progress = 0;
 
 const challenges = [
   { text: "Where did we go the first time I knew I loved you?", answer: "sargent peps" },
@@ -245,7 +247,7 @@ function checkAnswer(i){
 
   modal.style.display='none';
   landmarks[i].classList.remove('locked');
-  landmarks[i].style.transform='scale(1.6)';
+  landmarks[i].style.transform='scale(1.5)';
   setTimeout(()=> landmarks[i].style.transform='',400);
   progress++;
   updatePlayerPosition(i);
