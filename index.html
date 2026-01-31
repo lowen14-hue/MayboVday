@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Valentine Quest RPG 💖</title>
+<title>Valentine Quest Map 💖</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 html, body {
@@ -11,11 +11,11 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Segoe UI', sans-serif;
-  background: #ffc0cb; /* light pink background */
+  background: #ffc0cb;
   overflow: hidden;
 }
 
-/* Game container full screen */
+/* Game container */
 .game {
   width: 100vw;
   height: 100vh;
@@ -27,10 +27,9 @@ html, body {
   position: absolute;
   font-size: 3rem;
   z-index: 10;
-  transition: top 1s linear, left 1s linear;
 }
 
-/* Landmarks */
+/* Landmarks / islands */
 .landmark {
   position: absolute;
   font-size: 3rem;
@@ -38,23 +37,17 @@ html, body {
   transition: transform 0.3s;
   z-index: 11;
 }
-.landmark.locked { opacity: 0.4; pointer-events: none; }
-.landmark:hover:not(.locked) { transform: scale(1.4); }
+.landmark.locked { opacity: 0.5; pointer-events: none; }
+.landmark:hover:not(.locked) { transform: scale(1.5); }
 
-/* Glowing path lines */
+/* Paths */
 .path-line {
   position: absolute;
   height: 6px;
   background: linear-gradient(90deg,#ff6f91,#ffd1dc);
-  box-shadow: 0 0 10px #ff6f91,0 0 20px #ffd1dc;
   border-radius: 10px;
-  transform-origin: left center;
+  box-shadow: 0 0 10px #ff6f91,0 0 20px #ffd1dc;
   z-index: 1;
-  animation: glow 1.5s infinite alternate;
-}
-@keyframes glow {
-  0% { box-shadow: 0 0 10px #ff6f91,0 0 20px #ffd1dc; }
-  100% { box-shadow: 0 0 20px #ff6f91,0 0 30px #ffd1dc; }
 }
 
 /* Modal */
@@ -103,7 +96,7 @@ html, body {
 .flashRed { animation: flashRedAnim 0.15s infinite alternate; z-index:50; }
 @keyframes flashRedAnim { from { background: white; } to { background: red; } }
 
-/* Confetti and hearts */
+/* Confetti / hearts */
 .confetti, .heart {
   position: fixed;
   font-size: 2rem;
@@ -112,6 +105,7 @@ html, body {
   z-index: 20;
 }
 @keyframes fall { from { transform: translateY(-20px); opacity: 1; } to { transform: translateY(100vh); opacity: 0; } }
+
 </style>
 </head>
 <body>
@@ -122,15 +116,15 @@ html, body {
   <!-- Player avatar -->
   <div id="player">👧🏽</div>
 
-  <!-- Landmarks -->
-  <div class="landmark" data-level="0" style="top:100px; left:100px;">🌲</div>
+  <!-- Emoji islands / levels -->
+  <div class="landmark" data-level="0" style="top:80px; left:100px;">🌲</div>
   <div class="landmark locked" data-level="1" style="top:200px; left:400px;">📸</div>
-  <div class="landmark locked" data-level="2" style="top:350px; left:650px;">🏝️</div>
-  <div class="landmark locked" data-level="3" style="top:500px; left:850px;">🍝</div>
-  <div class="landmark locked" data-level="4" style="top:600px; left:700px;">🐶</div>
-  <div class="landmark locked" data-level="5" style="top:450px; left:1000px;">🦖</div>
-  <div class="landmark locked" data-level="6" style="top:300px; left:1100px;">⚓</div>
-  <div class="landmark locked" data-level="7" style="top:150px; left:1250px;">🏰</div>
+  <div class="landmark locked" data-level="2" style="top:350px; left:700px;">🏝️</div>
+  <div class="landmark locked" data-level="3" style="top:500px; left:950px;">🍝</div>
+  <div class="landmark locked" data-level="4" style="top:600px; left:750px;">🐶</div>
+  <div class="landmark locked" data-level="5" style="top:450px; left:1100px;">🦖</div>
+  <div class="landmark locked" data-level="6" style="top:300px; left:1250px;">⚓</div>
+  <div class="landmark locked" data-level="7" style="top:150px; left:1400px;">🏰</div>
 
   <!-- Path container -->
   <div id="pathContainer"></div>
@@ -159,7 +153,7 @@ const challenges = [
   { text: "⚓🌊 Ahoy! Best place I’ve ever taken you to eat?", answer: "cliff house" }
 ];
 
-// Draw glowing paths
+// Draw glowing paths (straight lines for now)
 for(let i=0;i<levels.length-1;i++){
   const start=levels[i].getBoundingClientRect();
   const end=levels[i+1].getBoundingClientRect();
@@ -170,14 +164,13 @@ for(let i=0;i<levels.length-1;i++){
   const length=Math.sqrt(dx*dx+dy*dy);
   const angle=Math.atan2(dy,dx)*180/Math.PI;
   line.style.width=length+'px';
-  line.style.height='6px';
-  line.style.top=(start.top + start.height/2)+'px';
-  line.style.left=(start.left + start.width/2)+'px';
+  line.style.top=(start.top+start.height/2)+'px';
+  line.style.left=(start.left+start.width/2)+'px';
   line.style.transform=`rotate(${angle}deg)`;
   pathContainer.appendChild(line);
 }
 
-// Move avatar
+// Move avatar smoothly along path
 function movePlayerToLevel(i){
   const rect=levels[i].getBoundingClientRect();
   player.style.top=(rect.top + window.scrollY - 25)+'px';
