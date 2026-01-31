@@ -12,7 +12,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: 'Segoe UI', sans-serif;
-  background: #87CEFA;
+  background: #ffc0cb; /* light pink background */
 }
 
 /* Game container */
@@ -21,18 +21,7 @@ html, body {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(to bottom, #a0e7ff, #6ccff6);
-  font-size: 2rem; /* Bigger tiles */
-}
-
-/* Terrain tile */
-.tile {
-  position: absolute;
-  width: 48px;
-  height: 48px;
-  text-align: center;
-  line-height: 48px;
-  pointer-events: none;
+  font-size: 2rem;
 }
 
 /* Player */
@@ -61,7 +50,7 @@ html, body {
   left: 0;
   height: 24px;
   width: 100%;
-  background: #eee;
+  background: #ffe6f0;
   z-index: 20;
 }
 #progressFill {
@@ -149,46 +138,6 @@ html, body {
 </div>
 
 <script>
-// Terrain emojis
-const terrainEmojis = ['🌿','🌲','🌊','🟫'];
-const game = document.getElementById('game');
-const cols = Math.ceil(window.innerWidth / 48);
-const rows = Math.ceil(window.innerHeight / 48);
-
-// Generate terrain
-for(let y=0; y<rows; y++){
-  for(let x=0; x<cols; x++){
-    const tile = document.createElement('div');
-    tile.classList.add('tile');
-    const r = Math.random();
-    if(r<0.1) tile.textContent = '🌊';
-    else if(r<0.3) tile.textContent = '🌲';
-    else if(r<0.35) tile.textContent = '🟫';
-    else tile.textContent = '🌿';
-    tile.style.top = `${y*48}px`;
-    tile.style.left = `${x*48}px`;
-    game.appendChild(tile);
-  }
-}
-
-// Clouds and birds
-for(let i=0;i<5;i++){
-  const cloud=document.createElement('div');
-  cloud.className='cloud';
-  cloud.style.top=Math.random()*50+'%';
-  cloud.style.animationDuration=(20+Math.random()*20)+'s';
-  cloud.textContent='☁️';
-  game.appendChild(cloud);
-}
-for(let i=0;i<3;i++){
-  const bird=document.createElement('div');
-  bird.className='bird';
-  bird.style.top=Math.random()*60+20+'%';
-  bird.style.animationDuration=(15+Math.random()*10)+'s';
-  bird.textContent='🐦';
-  game.appendChild(bird);
-}
-
 // Player and landmarks logic
 const landmarks = document.querySelectorAll('.landmark');
 const player = document.getElementById('player');
@@ -211,7 +160,7 @@ function normalize(str){ return str.toLowerCase().replace(/[^a-z0-9\s]/g,''); }
 
 function updatePlayerPosition(i){
   const rect=landmarks[i].getBoundingClientRect();
-  const board=game.getBoundingClientRect();
+  const board=document.body.getBoundingClientRect();
   player.style.top=(rect.top-board.top)+'px';
   player.style.left=(rect.left-board.left)+'px';
   progressFill.style.width=((i/(landmarks.length-1))*100)+'%';
@@ -280,6 +229,24 @@ function spawnEffects(symbols,count){
     document.body.appendChild(e);
     setTimeout(()=>e.remove(),3000);
   }
+}
+
+// Clouds and birds
+for(let i=0;i<5;i++){
+  const cloud=document.createElement('div');
+  cloud.className='cloud';
+  cloud.style.top=Math.random()*50+'%';
+  cloud.style.animationDuration=(20+Math.random()*20)+'s';
+  cloud.textContent='☁️';
+  document.body.appendChild(cloud);
+}
+for(let i=0;i<3;i++){
+  const bird=document.createElement('div');
+  bird.className='bird';
+  bird.style.top=Math.random()*60+20+'%';
+  bird.style.animationDuration=(15+Math.random()*10)+'s';
+  bird.textContent='🐦';
+  document.body.appendChild(bird);
 }
 </script>
 </body>
