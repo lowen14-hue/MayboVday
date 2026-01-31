@@ -5,8 +5,7 @@
 <title>Valentine Quest RPG 💖</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-/* Fullscreen game */
-body, html {
+html, body {
   margin: 0;
   padding: 0;
   width: 100%;
@@ -23,23 +22,23 @@ body, html {
   height: 100vh;
   overflow: hidden;
   background: linear-gradient(to bottom, #a0e7ff, #6ccff6);
+  font-size: 2rem; /* Bigger tiles */
 }
 
-/* Terrain tiles using emoji/color squares */
+/* Terrain tile */
 .tile {
   position: absolute;
-  font-size: 3rem;
-  line-height: 1;
   width: 48px;
   height: 48px;
   text-align: center;
+  line-height: 48px;
   pointer-events: none;
 }
 
 /* Player */
 #player {
   position: absolute;
-  font-size: 4rem;
+  font-size: 3rem;
   z-index: 10;
   transition: top 0.8s ease, left 0.8s ease;
 }
@@ -129,7 +128,7 @@ body, html {
 <div class="game" id="game"></div>
 
 <!-- Player -->
-<div id="player">👩</div>
+<div id="player">👩‍🦰</div>
 
 <!-- Landmarks -->
 <div class="landmark" data-level="0" style="top:100px; left:100px;">🌲</div>
@@ -149,13 +148,9 @@ body, html {
   <div class="modal-content" id="modalContent"></div>
 </div>
 
-<!-- Background music and sound -->
-<audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-love-ballad-romantic-1277.mp3" loop autoplay></audio>
-<audio id="ding" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.wav"></audio>
-
 <script>
 // Terrain emojis
-const terrainTypes = ['🌿','🌲','🌊']; // Grass, forest, water
+const terrainEmojis = ['🌿','🌲','🌊','🟫'];
 const game = document.getElementById('game');
 const cols = Math.ceil(window.innerWidth / 48);
 const rows = Math.ceil(window.innerHeight / 48);
@@ -165,7 +160,11 @@ for(let y=0; y<rows; y++){
   for(let x=0; x<cols; x++){
     const tile = document.createElement('div');
     tile.classList.add('tile');
-    tile.textContent = Math.random()<0.1?'🌊': Math.random()<0.3?'🌲':'🌿';
+    const r = Math.random();
+    if(r<0.1) tile.textContent = '🌊';
+    else if(r<0.3) tile.textContent = '🌲';
+    else if(r<0.35) tile.textContent = '🟫';
+    else tile.textContent = '🌿';
     tile.style.top = `${y*48}px`;
     tile.style.left = `${x*48}px`;
     game.appendChild(tile);
@@ -196,7 +195,6 @@ const player = document.getElementById('player');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
 const progressFill = document.getElementById('progressFill');
-const ding = document.getElementById('ding');
 let progress = 0;
 
 const challenges = [
@@ -251,8 +249,7 @@ function checkAnswer(i){
   setTimeout(()=> landmarks[i].style.transform='',400);
   progress++;
   updatePlayerPosition(i);
-  ding.play();
-  spawnEffects(['💖','✨'],30);
+  spawnEffects(['💖','✨','🎉'],30);
 }
 
 // Final screen
@@ -271,7 +268,7 @@ function nope(){
 
 function yes(){
   modalContent.innerHTML=`<h2>🥰 Yes! 🥰</h2><p>I knew it!</p>`;
-  spawnEffects(['🎉','💗'],60);
+  spawnEffects(['💖','✨','🎉'],60);
 }
 
 function spawnEffects(symbols,count){
@@ -284,7 +281,6 @@ function spawnEffects(symbols,count){
     setTimeout(()=>e.remove(),3000);
   }
 }
-
 </script>
 </body>
 </html>
