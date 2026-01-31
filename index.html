@@ -5,6 +5,7 @@
 <title>Valentine Quest RPG 💖</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+/* Fullscreen game */
 body, html {
   margin: 0;
   padding: 0;
@@ -22,19 +23,18 @@ body, html {
   overflow: hidden;
 }
 
-/* Terrain tiles (grass, forest, water) */
+/* Terrain tiles */
 .tile {
   position: absolute;
   width: 64px;
   height: 32px;
-  background-size: cover;
   transform: skewY(26.565deg) scaleY(0.5);
   z-index: 0;
+  border: 1px solid #0002; /* optional grid lines */
 }
-
-.grass { background: url('https://i.imgur.com/pXvhj2x.png'); }
-.forest { background: url('https://i.imgur.com/3ZBg7B1.png'); }
-.water { background: url('https://i.imgur.com/8Zl6r1h.png'); }
+.grass { background-color: #6cbd45; }
+.forest { background-color: #2f7c3e; }
+.water { background-color: #4ea1f2; }
 
 /* Player */
 #player {
@@ -126,10 +126,7 @@ body, html {
 </style>
 </head>
 <body>
-<div class="game" id="game">
-
-  <!-- Terrain tiles -->
-</div>
+<div class="game" id="game"></div>
 
 <!-- Player -->
 <div id="player">👩</div>
@@ -154,12 +151,10 @@ body, html {
 
 <!-- Background music -->
 <audio id="bgMusic" src="https://assets.mixkit.co/music/preview/mixkit-love-ballad-romantic-1277.mp3" loop autoplay></audio>
-
-<!-- Sound effect -->
 <audio id="ding" src="https://assets.mixkit.co/sfx/preview/mixkit-arcade-game-jump-coin-216.wav"></audio>
 
 <script>
-// Generate a grid of terrain tiles
+// Generate terrain tiles
 const game = document.getElementById('game');
 const cols = Math.ceil(window.innerWidth / 64) + 1;
 const rows = Math.ceil(window.innerHeight / 32) + 1;
