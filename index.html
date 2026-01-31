@@ -20,8 +20,6 @@ html, body {
   position: relative;
   width: 100vw;
   height: 100vh;
-  overflow: hidden;
-  font-size: 2rem;
 }
 
 /* Player */
@@ -110,6 +108,21 @@ html, body {
 /* Flashing red for No screen */
 .flashRed { animation: flashred 0.2s infinite alternate; z-index:50; }
 @keyframes flashred { from {background:red;} to {background:white;} }
+
+/* Glowing path */
+.path-line {
+  position: absolute;
+  background: linear-gradient(90deg, #ff6f91, #ffd1dc);
+  box-shadow: 0 0 10px #ff6f91, 0 0 20px #ffd1dc;
+  border-radius: 10px;
+  z-index: 1;
+  transform-origin: left center;
+  animation: glow 1.5s infinite alternate;
+}
+@keyframes glow {
+  0% { box-shadow: 0 0 10px #ff6f91, 0 0 20px #ffd1dc; }
+  100% { box-shadow: 0 0 20px #ff6f91, 0 0 30px #ffd1dc; }
+}
 </style>
 </head>
 <body>
@@ -117,7 +130,7 @@ html, body {
 <div class="game" id="game"></div>
 
 <!-- Player -->
-<div id="player">👩‍🦰</div>
+<div id="player">👧🏽</div> <!-- cartoon girl with black hair -->
 
 <!-- Landmarks -->
 <div class="landmark" data-level="0" style="top:100px; left:100px;">🌲</div>
@@ -129,6 +142,9 @@ html, body {
 <div class="landmark locked" data-level="6" style="top:350px; left:850px;">⚓</div>
 <div class="landmark locked" data-level="7" style="top:150px; left:950px;">🏰</div>
 
+<!-- Glowing path -->
+<div id="pathContainer"></div>
+
 <!-- Progress bar -->
 <div id="progressBar"><div id="progressFill"></div></div>
 
@@ -138,12 +154,13 @@ html, body {
 </div>
 
 <script>
-// Player and landmarks logic
+// Player and landmarks
 const landmarks = document.querySelectorAll('.landmark');
 const player = document.getElementById('player');
 const modal = document.getElementById('modal');
 const modalContent = document.getElementById('modalContent');
 const progressFill = document.getElementById('progressFill');
+const pathContainer = document.getElementById('pathContainer');
 let progress = 0;
 
 const challenges = [
@@ -166,6 +183,24 @@ function updatePlayerPosition(i){
   progressFill.style.width=((i/(landmarks.length-1))*100)+'%';
 }
 updatePlayerPosition(0);
+
+// Draw glowing path between landmarks
+for(let i=0;i<landmarks.length-1;i++){
+  const start=landmarks[i].getBoundingClientRect();
+  const end=landmarks[i+1].getBoundingClientRect();
+  const line = document.createElement('div');
+  line.className='path-line';
+  const dx=end.left-start.left;
+  const dy=end.top-start.top;
+  const length=Math.sqrt(dx*dx+dy*dy);
+  const angle=Math.atan2(dy,dx)*180/Math.PI;
+  line.style.width=length+'px';
+  line.style.height='6px';
+  line.style.top=(start.top+start.height/2)+'px';
+  line.style.left=(start.left+start.width/2)+'px';
+  line.style.transform=`rotate(${angle}deg)`;
+  pathContainer.appendChild(line);
+}
 
 // Landmark click
 landmarks.forEach(l=>{
