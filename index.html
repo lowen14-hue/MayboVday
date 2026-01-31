@@ -14,38 +14,21 @@ html, body {
 }
 .game { width: 100vw; height: 100vh; position: relative; }
 
+/* Progress bar */
 #progressBar { position: absolute; top:0; left:0; width:100%; height:25px; background:#ffe6f0; z-index:20; }
 #progressFill { height:100%; width:0%; background:#ff6f91; transition: width 0.5s ease; }
-
-#player { position: absolute; font-size:3rem; z-index:10; transform:translate(-50%,-50%); }
 
 /* Islands */
 .landmark {
   position: absolute;
   font-size:3rem;
   cursor: pointer;
-  z-index:11;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
 }
-.landmark.locked { opacity:0.5; pointer-events:none; }
-.landmark:hover:not(.locked) { transform: translate(-50%,-50%) scale(1.5); }
 
-/* SVG Paths */
+/* SVG curved paths */
 #pathSVG { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
 .curve { fill:none; stroke: #ff6f91; stroke-width:6; stroke-linecap:round; filter: drop-shadow(0 0 10px #ff6f91) drop-shadow(0 0 20px #ffd1dc); }
-
-/* Modal */
-.modal { position: fixed; inset:0; display:flex; justify-content:center; align-items:center; background: rgba(0,0,0,0.6); z-index:30; display:none; }
-.modal-content { background:white; padding:30px; border-radius:15px; width:90%; max-width:400px; text-align:center; }
-.modal-content input, .modal-content button { width:90%; padding:10px; margin-top:10px; font-size:1rem; }
-
-/* Flash red for No */
-.flashRed { animation: flashRedAnim 0.15s infinite alternate; z-index:50; }
-@keyframes flashRedAnim { from { background:white; } to { background:red; } }
-
-/* Confetti / hearts */
-.confetti, .heart { position: fixed; font-size:2rem; animation:fall 2s linear forwards; pointer-events:none; z-index:20; }
-@keyframes fall { from { transform: translateY(-20px); opacity:1; } to { transform: translateY(100vh); opacity:0; } }
 </style>
 </head>
 <body>
@@ -53,125 +36,52 @@ html, body {
 <div class="game" id="game">
   <div id="progressBar"><div id="progressFill"></div></div>
   <svg id="pathSVG"></svg>
-  <div id="player">👧🏽</div>
 
   <!-- Emoji islands using percentages -->
-  <div class="landmark" data-level="0" data-x="5%" data-y="10%">🌲</div>
-  <div class="landmark locked" data-level="1" data-x="25%" data-y="20%">📸</div>
-  <div class="landmark locked" data-level="2" data-x="45%" data-y="35%">🏝️</div>
-  <div class="landmark locked" data-level="3" data-x="65%" data-y="50%">🍝</div>
-  <div class="landmark locked" data-level="4" data-x="50%" data-y="70%">🐶</div>
-  <div class="landmark locked" data-level="5" data-x="75%" data-y="55%">🦖</div>
-  <div class="landmark locked" data-level="6" data-x="85%" data-y="35%">⚓</div>
-  <div class="landmark locked" data-level="7" data-x="95%" data-y="15%">🏰</div>
-</div>
-
-<div class="modal" id="modal">
-  <div class="modal-content" id="modalContent"></div>
+  <div class="landmark" data-x="10%" data-y="10%">🌲</div>
+  <div class="landmark" data-x="30%" data-y="30%">📸</div>
+  <div class="landmark" data-x="50%" data-y="50%">🏝️</div>
+  <div class="landmark" data-x="70%" data-y="35%">🍝</div>
+  <div class="landmark" data-x="90%" data-y="10%">🏰</div>
 </div>
 
 <script>
 const levels = document.querySelectorAll('.landmark');
-const player = document.getElementById('player');
-const progressFill = document.getElementById('progressFill');
-const modal = document.getElementById('modal');
-const modalContent = document.getElementById('modalContent');
 const pathSVG = document.getElementById('pathSVG');
-let progress = 0;
+const progressFill = document.getElementById('progressFill');
 
-const challenges = [
-  { text: "Where did we go the first time I knew I loved you?", answer: "sargent peps" },
-  { text: "Where was our first photo taken?", answer: "towers girls bathroom" },
-  { text: "Where were we when I surprised you in Florida?", answer: "st armands circle" },
-  { text: "🍝 What is our favorite meal that I make soooo good?", answer: "shrimp scampi" },
-  { text: "🐶 What was the name of our AI dog?", answer: "chase" },
-  { text: "🦖 RAWR! Danny the dinosaur is jamming — what is his favorite song?", answer: "dancing in the moonlight" },
-  { text: "⚓🌊 Ahoy! Best place I’ve ever taken you to eat?", answer: "cliff house" }
-];
-
-// Draw curved paths using percentages and SVG
-function drawPaths(){
-  for(let i=0;i<levels.length-1;i++){
-    const x1 = levels[i].dataset.x;
-    const y1 = levels[i].dataset.y;
-    const x2 = levels[i+1].dataset.x;
-    const y2 = levels[i+1].dataset.y;
-    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-    path.setAttribute("d",`M ${x1} ${y1} Q ${(parseFloat(x1)+parseFloat(x2))/2}% ${(parseFloat(y1)+parseFloat(y2))/2-5}%, ${x2} ${y2}`);
-    path.setAttribute("class","curve");
-    pathSVG.appendChild(path);
-  }
-}
-drawPaths();
-
-// Move avatar
-function movePlayerToLevel(i){
-  const x = levels[i].dataset.x;
-  const y = levels[i].dataset.y;
-  player.style.left = x;
-  player.style.top = y;
-  progressFill.style.width = ((i/(levels.length-1))*100)+'%';
-}
-movePlayerToLevel(0);
-
-// Level clicks
-levels.forEach(level=>{
-  level.addEventListener('click',()=>{
-    const i = Number(level.dataset.level);
-    if(i!==progress || level.classList.contains('locked')) return;
-    if(i<challenges.length) openChallenge(i);
-    else showFinal();
-  });
+// Position islands using percentages
+levels.forEach(level => {
+  level.style.left = level.dataset.x;
+  level.style.top = level.dataset.y;
 });
 
-function normalize(str){ return str.toLowerCase().replace(/[^a-z0-9\s]/g,''); }
-function openChallenge(i){
-  modal.style.display='flex';
-  modalContent.innerHTML = `<h2>${challenges[i].text}</h2>
-    <input id="answer" placeholder="Your answer..." />
-    <br><br>
-    <button onclick="checkAnswer(${i})">Submit</button>`;
-}
-function checkAnswer(i){
-  const user = normalize(document.getElementById('answer').value);
-  const target = normalize(challenges[i].answer).split(' ');
-  const correct = target.every(word => user.includes(word));
-  if(!correct){ alert("Not quite 😏 try again"); return; }
-  modal.style.display='none';
-  levels[i].classList.add('completed');
-  progress++;
-  levels[progress]?.classList.remove('locked');
-  movePlayerToLevel(i);
+// Draw curved paths between islands
+for(let i=0;i<levels.length-1;i++){
+  const x1 = levels[i].dataset.x;
+  const y1 = levels[i].dataset.y;
+  const x2 = levels[i+1].dataset.x;
+  const y2 = levels[i+1].dataset.y;
+
+  // SVG needs numeric values in pixels, so convert percentages to pixels
+  const svgRect = pathSVG.getBoundingClientRect();
+  const px1 = parseFloat(x1)/100 * svgRect.width;
+  const py1 = parseFloat(y1)/100 * svgRect.height;
+  const px2 = parseFloat(x2)/100 * svgRect.width;
+  const py2 = parseFloat(y2)/100 * svgRect.height;
+
+  const cx = (px1 + px2)/2;
+  const cy = Math.min(py1, py2) - 50; // curve above
+
+  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+  path.setAttribute("d",`M ${px1} ${py1} Q ${cx} ${cy} ${px2} ${py2}`);
+  path.setAttribute("class","curve");
+  pathSVG.appendChild(path);
 }
 
-function showFinal(){
-  modal.style.display='flex';
-  modalContent.innerHTML=`<h2>💖 You made it 💖</h2>
-    <p>Will you be my Valentine?</p>
-    <button onclick="yes()">Yes 💕</button>
-    <button onclick="nope()" style="margin-left:10px;background:#555;color:white;">No</button>`;
-}
-
-function nope(){
-  modalContent.innerHTML=`<div class="flashRed" style="height:200px;">
-    <div style="font-size:5rem">🃏</div><h2>Get Fucked</h2></div>`;
-  setTimeout(showFinal,10000);
-}
-
-function yes(){
-  modalContent.innerHTML=`<h2>🥰 YAY 🥰</h2><p>I was hoping you'd say yes.</p>`;
-  for(let i=0;i<50;i++){ spawn('🎉'); spawn('💖'); }
-}
-
-function spawn(symbol){
-  const el=document.createElement('div');
-  el.className=symbol==='🎉'?'confetti':'heart';
-  el.textContent=symbol;
-  el.style.left=Math.random()*100+'vw';
-  el.style.animationDuration=(1+Math.random()*2)+'s';
-  document.body.appendChild(el);
-  setTimeout(()=>el.remove(),3000);
-}
+// Example: simple progress (just fill after 3rd island)
+progressFill.style.width = '60%';
 </script>
+
 </body>
 </html>
