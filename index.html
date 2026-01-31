@@ -25,10 +25,25 @@ html, body {
   cursor: pointer;
   transform: translate(-50%, -50%);
 }
+.landmark.locked { opacity:0.5; pointer-events:none; }
+.landmark:hover:not(.locked) { transform: translate(-50%,-50%) scale(1.5); }
 
 /* SVG curved paths */
 #pathSVG { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
 .curve { fill:none; stroke: #ff6f91; stroke-width:6; stroke-linecap:round; filter: drop-shadow(0 0 10px #ff6f91) drop-shadow(0 0 20px #ffd1dc); }
+
+/* Modal */
+.modal { position: fixed; inset:0; display:flex; justify-content:center; align-items:center; background: rgba(0,0,0,0.6); z-index:30; display:none; }
+.modal-content { background:white; padding:30px; border-radius:15px; width:90%; max-width:400px; text-align:center; }
+.modal-content input, .modal-content button { width:90%; padding:10px; margin-top:10px; font-size:1rem; }
+
+/* Flash red for No */
+.flashRed { animation: flashRedAnim 0.15s infinite alternate; z-index:50; }
+@keyframes flashRedAnim { from { background:white; } to { background:red; } }
+
+/* Confetti / hearts */
+.confetti, .heart { position: fixed; font-size:2rem; animation:fall 2s linear forwards; pointer-events:none; z-index:20; }
+@keyframes fall { from { transform: translateY(-20px); opacity:1; } to { transform: translateY(100vh); opacity:0; } }
 </style>
 </head>
 <body>
@@ -38,50 +53,121 @@ html, body {
   <svg id="pathSVG"></svg>
 
   <!-- Emoji islands using percentages -->
-  <div class="landmark" data-x="10%" data-y="10%">🌲</div>
-  <div class="landmark" data-x="30%" data-y="30%">📸</div>
-  <div class="landmark" data-x="50%" data-y="50%">🏝️</div>
-  <div class="landmark" data-x="70%" data-y="35%">🍝</div>
-  <div class="landmark" data-x="90%" data-y="10%">🏰</div>
+  <div class="landmark" data-level="0" data-x="10%" data-y="10%">🌲</div>
+  <div class="landmark locked" data-level="1" data-x="30%" data-y="30%">📸</div>
+  <div class="landmark locked" data-level="2" data-x="50%" data-y="50%">🏝️</div>
+  <div class="landmark locked" data-level="3" data-x="70%" data-y="35%">🍝</div>
+  <div class="landmark locked" data-level="4" data-x="90%" data-y="10%">🏰</div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content" id="modalContent"></div>
 </div>
 
 <script>
 const levels = document.querySelectorAll('.landmark');
 const pathSVG = document.getElementById('pathSVG');
 const progressFill = document.getElementById('progressFill');
+const modal = document.getElementById('modal');
+const modalContent = document.getElementById('modalContent');
 
-// Position islands using percentages
+let progress = 0;
+
+const challenges = [
+  { text: "Where did we go the first time I knew I loved you?", answer: "sargent peps" },
+  { text: "Where was our first photo taken?", answer: "towers girls bathroom" },
+  { text: "Where were we when I surprised you in Florida?", answer: "st armands circle" },
+  { text: "🍝 What is our favorite meal that I make soooo good?", answer: "shrimp scampi" },
+  { text: "🏰 Final challenge! Will you be my Valentine?", answer: "" } // Last yes/no level
+];
+
+// Position islands
 levels.forEach(level => {
   level.style.left = level.dataset.x;
   level.style.top = level.dataset.y;
 });
 
-// Draw curved paths between islands
-for(let i=0;i<levels.length-1;i++){
-  const x1 = levels[i].dataset.x;
-  const y1 = levels[i].dataset.y;
-  const x2 = levels[i+1].dataset.x;
-  const y2 = levels[i+1].dataset.y;
-
-  // SVG needs numeric values in pixels, so convert percentages to pixels
+// Draw curved paths
+function drawPaths(){
   const svgRect = pathSVG.getBoundingClientRect();
-  const px1 = parseFloat(x1)/100 * svgRect.width;
-  const py1 = parseFloat(y1)/100 * svgRect.height;
-  const px2 = parseFloat(x2)/100 * svgRect.width;
-  const py2 = parseFloat(y2)/100 * svgRect.height;
+  for(let i=0;i<levels.length-1;i++){
+    const x1 = parseFloat(levels[i].dataset.x)/100 * svgRect.width;
+    const y1 = parseFloat(levels[i].dataset.y)/100 * svgRect.height;
+    const x2 = parseFloat(levels[i+1].dataset.x)/100 * svgRect.width;
+    const y2 = parseFloat(levels[i+1].dataset.y)/100 * svgRect.height;
+    const cx = (x1+x2)/2;
+    const cy = Math.min(y1,y2)-50;
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+    path.setAttribute("d",`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
+    path.setAttribute("class","curve");
+    pathSVG.appendChild(path);
+  }
+}
+drawPaths();
 
-  const cx = (px1 + px2)/2;
-  const cy = Math.min(py1, py2) - 50; // curve above
-
-  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-  path.setAttribute("d",`M ${px1} ${py1} Q ${cx} ${cy} ${px2} ${py2}`);
-  path.setAttribute("class","curve");
-  pathSVG.appendChild(path);
+// Progress update
+function updateProgress() {
+  progressFill.style.width = (progress/(levels.length-1)*100)+'%';
 }
 
-// Example: simple progress (just fill after 3rd island)
-progressFill.style.width = '60%';
-</script>
+// Normalize string
+function normalize(str){ return str.toLowerCase().replace(/[^a-z0-9\s]/g,''); }
 
+// Open challenge modal
+function openChallenge(i){
+  modal.style.display='flex';
+  if(i < challenges.length-1){
+    modalContent.innerHTML = `<h2>${challenges[i].text}</h2>
+      <input id="answer" placeholder="Your answer..." />
+      <br><br>
+      <button onclick="checkAnswer(${i})">Submit</button>`;
+  } else {
+    // Last level yes/no
+    showFinal();
+  }
+}
+
+// Check answer
+function checkAnswer(i){
+  const user = normalize(document.getElementById('answer').value);
+  const target = normalize(challenges[i].answer).split(' ');
+  const correct = target.every(word => user.includes(word));
+  if(!correct){ alert("Not quite 😏 try again"); return; }
+
+  modal.style.display='none';
+  levels[i].classList.add('completed');
+  progress++;
+  levels[progress]?.classList.remove('locked');
+  updateProgress();
+}
+
+// Level clicks
+levels.forEach(level=>{
+  level.addEventListener('click',()=>{
+    const i = Number(level.dataset.level);
+    if(i !== progress || level.classList.contains('locked')) return;
+    openChallenge(i);
+  });
+});
+
+// Yes/No screen
+function showFinal(){
+  modal.style.display='flex';
+  modalContent.innerHTML=`<h2>💖 You made it 💖</h2>
+    <p>Will you be my Valentine?</p>
+    <button onclick="yes()">Yes 💕</button>
+    <button onclick="nope()" style="margin-left:10px;background:#555;color:white;">No</button>`;
+}
+
+function nope(){
+  modalContent.innerHTML=`<div class="flashRed" style="height:200px;">
+    <div style="font-size:5rem">🃏</div><h2>Get Fucked</h2></div>`;
+  setTimeout(showFinal,10000);
+}
+
+function yes(){
+  modalContent.innerHTML=`<h2>🥰 YAY 🥰</h2><p>I was hoping you'd say yes.</p>`;
+}
+</script>
 </body>
 </html>
