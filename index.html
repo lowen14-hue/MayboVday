@@ -40,10 +40,6 @@ html, body {
 /* Flash red for No */
 .flashRed { animation: flashRedAnim 0.15s infinite alternate; z-index:50; }
 @keyframes flashRedAnim { from { background:white; } to { background:red; } }
-
-/* Confetti / hearts */
-.confetti, .heart { position: fixed; font-size:2rem; animation:fall 2s linear forwards; pointer-events:none; z-index:20; }
-@keyframes fall { from { transform: translateY(-20px); opacity:1; } to { transform: translateY(100vh); opacity:0; } }
 </style>
 </head>
 <body>
@@ -54,10 +50,13 @@ html, body {
 
   <!-- Emoji islands using percentages -->
   <div class="landmark" data-level="0" data-x="10%" data-y="10%">🌲</div>
-  <div class="landmark locked" data-level="1" data-x="30%" data-y="30%">📸</div>
-  <div class="landmark locked" data-level="2" data-x="50%" data-y="50%">🏝️</div>
-  <div class="landmark locked" data-level="3" data-x="70%" data-y="35%">🍝</div>
-  <div class="landmark locked" data-level="4" data-x="90%" data-y="10%">🏰</div>
+  <div class="landmark locked" data-level="1" data-x="25%" data-y="25%">📸</div>
+  <div class="landmark locked" data-level="2" data-x="45%" data-y="35%">🏝️</div>
+  <div class="landmark locked" data-level="3" data-x="60%" data-y="50%">🍝</div>
+  <div class="landmark locked" data-level="4" data-x="50%" data-y="70%">🐶</div>
+  <div class="landmark locked" data-level="5" data-x="75%" data-y="55%">🦖</div>
+  <div class="landmark locked" data-level="6" data-x="85%" data-y="35%">⚓</div>
+  <div class="landmark locked" data-level="7" data-x="95%" data-y="15%">🏰</div>
 </div>
 
 <div class="modal" id="modal">
@@ -73,12 +72,16 @@ const modalContent = document.getElementById('modalContent');
 
 let progress = 0;
 
+// All challenges in order
 const challenges = [
   { text: "Where did we go the first time I knew I loved you?", answer: "sargent peps" },
   { text: "Where was our first photo taken?", answer: "towers girls bathroom" },
   { text: "Where were we when I surprised you in Florida?", answer: "st armands circle" },
   { text: "🍝 What is our favorite meal that I make soooo good?", answer: "shrimp scampi" },
-  { text: "🏰 Final challenge! Will you be my Valentine?", answer: "" } // Last yes/no level
+  { text: "🐶 What was the name of our AI dog?", answer: "chase" },
+  { text: "🦖 RAWR! Danny the dinosaur is jamming — what is his favorite song?", answer: "dancing in the moonlight" },
+  { text: "⚓🌊 Ahoy! Best place I’ve ever taken you to eat?", answer: "cliff house" },
+  { text: "🏰 Will you be my Valentine?", answer: "" } // Final yes/no
 ];
 
 // Position islands
